@@ -1,0 +1,17 @@
+{
+  "include": [
+    "backend/ml"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Windows",
+  "extraPaths": [
+    "backend/ml",
+    "C:\\Users\\Tony K\\AppData\\Roaming\\Python\\Python312\\site-packages"
+  ],
+  "reportMissingImports": "error",
+  "reportMissingTypeStubs": false
+}

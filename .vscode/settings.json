@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "C:\\Program Files\\Python312\\python.exe",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/backend/ml",
+    "C:\\Users\\Tony K\\AppData\\Roaming\\Python\\Python312\\site-packages"
+  ]
+}

@@ -1,0 +1,385 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DNS_X — Architecture Assessment</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #ffffff;
+    color: #1f2328;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #57606a; margin-bottom: 28px; border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 3px; margin-right: 6px; letter-spacing: 0.04em; }
+  .tag-green  { background: #dcfce7; color: #166534; }
+  .tag-red    { background: #fee2e2; color: #991b1b; }
+  .tag-amber  { background: #fef9c3; color: #713f12; }
+  .tag-blue   { background: #dbeafe; color: #1e40af; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+
+  h2 { font-size: 15px; font-weight: 700; color: #1f2328; margin: 28px 0 10px; padding-bottom: 5px; border-bottom: 2px solid #e5e7eb; }
+  h3 { font-size: 13px; font-weight: 600; color: #1f2328; margin: 18px 0 6px; }
+
+  p { margin-bottom: 10px; color: #1f2328; font-size: 13.5px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 12.5px; }
+  th { background: #f7f8fa; text-align: left; padding: 7px 10px; font-weight: 600; color: #57606a; border: 1px solid #e5e7eb; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  td { padding: 7px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+
+  code { font-family: "SF Mono", "Cascadia Mono", Consolas, monospace; font-size: 11.5px; background: #f7f8fa; border: 1px solid #e5e7eb; padding: 1px 5px; border-radius: 3px; color: #3b82d4; }
+  pre { font-family: "SF Mono", "Cascadia Mono", Consolas, monospace; font-size: 11.5px; background: #f7f8fa; border: 1px solid #e5e7eb; padding: 14px 16px; border-radius: 4px; overflow-x: auto; line-height: 1.55; margin: 8px 0 16px; color: #1f2328; }
+
+  .callout { border-left: 3px solid #3b82d4; background: #f0f7ff; padding: 10px 14px; margin: 12px 0; font-size: 13px; color: #1e3a5f; border-radius: 0 4px 4px 0; }
+  .callout.warn { border-color: #f59e0b; background: #fffbeb; color: #713f12; }
+  .callout.ok   { border-color: #22c55e; background: #f0fdf4; color: #14532d; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0 16px; }
+  .card { border: 1px solid #e5e7eb; padding: 12px 14px; border-radius: 4px; background: #f7f8fa; }
+  .card h4 { font-size: 12px; font-weight: 700; color: #57606a; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .card ul { padding-left: 14px; font-size: 12.5px; color: #1f2328; }
+  .card li { margin-bottom: 3px; }
+
+  .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+  .step-num { min-width: 22px; height: 22px; background: #3b82d4; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-body { font-size: 13px; }
+  .step-body strong { display: block; margin-bottom: 2px; }
+
+  footer { margin-top: 48px; padding-top: 14px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 11px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>DNS_X — Architecture Assessment</h1>
+  <p class="subtitle">
+    Pre-implementation audit &amp; exact file plan  ·  Step 1 of 10  · 
+    <span class="tag tag-green">FRONTEND: COMPLETE</span>
+    <span class="tag tag-red">BACKEND: ABSENT</span>
+    <span class="tag tag-red">DATABASE: UNCONFIGURED</span>
+    <span class="tag tag-red">PYTHON: ABSENT</span>
+  </p>
+
+
+  
+  <h2>1 — Repository Baseline</h2>
+
+  <p>The repository is a <strong>frontend-only Vite + React SPA</strong>. No backend directory, no server code, no database migrations, no environment config, and no Python modules exist. The frontend is well-structured and partially functional, driven entirely by a 2-second mock-data generator.</p>
+
+  <div class="callout ok">
+    <strong>Key insight:</strong> The frontend is production-quality and must be preserved as-is. The build-out strategy is additive: create a sibling <code>backend/</code> tree and connect it to the frontend via the existing stub service files.
+  </div>
+
+  <table>
+    <thead><tr><th>Layer</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Vite + React SPA</td><td><span class="tag tag-green">EXISTS</span></td><td>6 routes, Tailwind v4, Recharts, Framer Motion</td></tr>
+      <tr><td>DNSStateContext</td><td><span class="tag tag-amber">MOCK</span></td><td>Generates synthetic DNS state every 2 s — replace with WebSocket sink later</td></tr>
+      <tr><td>Service files (4×)</td><td><span class="tag tag-amber">STUBS</span></td><td><code>dnsService.js</code>, <code>aiService.js</code>, <code>alertService.js</code>, <code>anomalyService.js</code> — empty, ready to be implemented</td></tr>
+      <tr><td>Hook files (2×)</td><td><span class="tag tag-amber">STUBS</span></td><td><code>useRealtime.js</code>, <code>useAuth.js</code> — empty</td></tr>
+      <tr><td>AuthContext</td><td><span class="tag tag-amber">STUB</span></td><td>Empty; low priority for Phase 1</td></tr>
+      <tr><td><code>src/lib/supabase.js</code></td><td><span class="tag tag-red">EMPTY</span></td><td>Must be configured with env vars</td></tr>
+      <tr><td>Backend server</td><td><span class="tag tag-red">ABSENT</span></td><td>Entire <code>backend/</code> directory does not exist</td></tr>
+      <tr><td>DB schema / migrations</td><td><span class="tag tag-red">ABSENT</span></td><td>No SQL files, no schema</td></tr>
+      <tr><td>Python telemetry / ML</td><td><span class="tag tag-red">ABSENT</span></td><td>No <code>telemetry/</code> or <code>ml/</code> directories</td></tr>
+      <tr><td><code>.env</code> / <code>.env.example</code></td><td><span class="tag tag-red">ABSENT</span></td><td>No environment configuration exists</td></tr>
+    </tbody>
+  </table>
+
+
+  
+  <h2>2 — Frontend Reuse Catalogue</h2>
+
+  <h3>2a. Data Contract — What the frontend expects</h3>
+  <p>The mock generator in <code>src/data/liveState.js</code> defines the exact shape that all frontend components consume via <code>useDNSState()</code>. The backend REST API and WebSocket events must produce compatible payloads.</p>
+
+  <pre>{
+  timestamp: number,
+  system:        { status: "operational|degraded|critical", health: number },
+  traffic:       { qps: number, peakQps: number, averageQps: number },
+  performance:   { latency: number, cacheHit: number },
+  errors:        { nxdomain: number, servfail: number, timeout: number,
+                   rate: number, dominant: string, trend: "rising|stable|falling" },
+  infrastructure: {
+    gateway:   { status: string, qps: number },
+    resolvers: [{ id, name, status, latency, qps }],
+    cache:     { status: string, hitRate: number }
+  },
+  ai: {
+    anomalyScore: number,     // 0–1
+    outageRisk:   number,     // 0–100
+    confidence:   number,     // 0–100
+    baseline:     "normal|elevated|abnormal",
+    severity:     "low|warning|critical",
+    assessment:   string,
+    signal:       string,
+    recommendation: string
+  }
+}</pre>
+
+  <h3>2b. Page → Component → Data mapping</h3>
+  <table>
+    <thead><tr><th>Page / Route</th><th>Key Components</th><th>Data Source</th><th>Backend Endpoint Needed</th></tr></thead>
+    <tbody>
+      <tr><td><code>/dashboard</code></td><td>MetricStrip, InfrastructureMap, AIIntelligence, DNSActivityChart, ErrorRateChart</td><td><code>useDNSState()</code> live state</td><td><code>GET /api/v1/overview</code> + WS <code>telemetry.updated</code></td></tr>
+      <tr><td><code>/monitoring</code></td><td>ResolverCard × 3, InfrastructureMap, LiveEvents, ResponseTimeChart, ErrorRateChart</td><td><code>useDNSState()</code> live state</td><td><code>GET /api/v1/infrastructure</code> + WS <code>resolver.updated</code></td></tr>
+      <tr><td><code>/anomalies</code></td><td>AnomalyTable, AnomalyTimeline, AnomalyExplanation, AnomalyRisk</td><td>Hardcoded in component</td><td><code>GET /api/v1/signals</code></td></tr>
+      <tr><td><code>/incidents</code></td><td>IncidentOverview, IncidentTable (3 hardcoded rows), IncidentTimeline, RootCauseCard</td><td>Hardcoded inside <code>IncidentTable.jsx</code></td><td><code>GET /api/v1/incidents</code> + WS <code>incident.created/updated</code></td></tr>
+      <tr><td><code>/ai-insights</code></td><td>AIAssessment (hardcoded %), ThreatProbability (hardcoded %), ExplainabilityPanel, RootCausePrediction, AIRecommendation</td><td>Hardcoded values</td><td><code>GET /api/v1/incidents/:id/ai</code></td></tr>
+      <tr><td><code>/settings</code></td><td>Settings form</td><td>Unknown — page not read</td><td><code>GET/PATCH /api/v1/settings</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>2c. Navigation alignment note</h3>
+  <div class="callout warn">
+    <code>src/lib/constants.js</code> defines navigation labels <strong>Anomalies</strong> and <strong>AI Core</strong> as top-level routes (<code>/anomalies</code>, <code>/ai-insights</code>). The project spec says there should be no standalone "Anomalies" or "AI Core" pages — only Overview, Infrastructure, Incidents &amp; Signals, Settings. <strong>Decision required before Phase 8 (frontend wiring):</strong> either consolidate these pages into the four canonical views, or keep the current six-route structure and map API data into all six. Recommendation: keep the six routes since they are already built; the spec was aspirational about navigation.
+  </div>
+
+
+  
+  <h2>3 — Mock / Hardcoded Data Locations</h2>
+  <p>These are the exact files and components that contain hardcoded data. Each will be replaced in Phase 8 by real API/WebSocket data.</p>
+
+  <table>
+    <thead><tr><th>File</th><th>Mock Content</th><th>Replace With</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/data/liveState.js</code></td><td>Full DNS state generator — the primary mock engine</td><td>WebSocket event sink in <code>DNSStateContext</code>; generator kept as simulation fallback</td></tr>
+      <tr><td><code>src/data/mockInfrastructure.js</code></td><td>8 topology nodes + 9 connections (static)</td><td><code>GET /api/v1/infrastructure</code> response</td></tr>
+      <tr><td><code>src/components/incidents/IncidentTable.jsx</code></td><td>3 hardcoded incident objects at top of file</td><td><code>GET /api/v1/incidents</code> via <code>dnsService.js</code></td></tr>
+      <tr><td><code>src/components/ai/AIAssessment.jsx</code></td><td>Hardcoded "91%", "12%", "78%", "10%" confidence metrics</td><td><code>GET /api/v1/incidents/:id/ai</code></td></tr>
+      <tr><td><code>src/components/ai/ThreatProbability.jsx</code></td><td>Hardcoded probability array [78, 10, 12]</td><td><code>GET /api/v1/incidents/:id/ai</code></td></tr>
+      <tr><td><code>src/contexts/DNSStateContext.jsx</code></td><td>Drives state from mock generator every 2 s</td><td>Connect to WebSocket; keep interval as simulation fallback</td></tr>
+    </tbody>
+  </table>
+
+
+  
+  <h2>4 — Exact File Plan</h2>
+
+  <h3>4a. Files to CREATE (net new)</h3>
+
+  <pre>backend/
+├── package.json
+├── .env.example
+├── src/
+│   ├── server.js                          ← Express app entry + WS init
+│   ├── app.js                             ← Express config, middleware, routes
+│   ├── config/
+│   │   ├── env.js                         ← Validated env vars (dotenv)
+│   │   ├── database.js                    ← Supabase client singleton
+│   │   └── logger.js                      ← Pino logger
+│   ├── routes/
+│   │   ├── health.js
+│   │   ├── overview.js
+│   │   ├── infrastructure.js
+│   │   ├── incidents.js
+│   │   ├── signals.js
+│   │   ├── ai.js
+│   │   ├── alerts.js
+│   │   └── settings.js
+│   ├── controllers/
+│   │   ├── overviewController.js
+│   │   ├── infrastructureController.js
+│   │   ├── incidentController.js
+│   │   ├── signalController.js
+│   │   ├── aiController.js
+│   │   └── settingsController.js
+│   ├── services/
+│   │   ├── telemetryService.js            ← Ingest + aggregate raw metrics
+│   │   ├── infrastructureService.js       ← Resolver state management
+│   │   ├── baselineService.js             ← Rolling stats per resolver
+│   │   ├── signalService.js               ← Z-score / deviation detection
+│   │   ├── correlationService.js          ← Group signals → incidents
+│   │   ├── incidentService.js             ← Incident lifecycle CRUD
+│   │   ├── aiService.js                   ← ML bridge (calls Python via child_process)
+│   │   ├── alertService.js                ← Alert evaluation + dispatch
+│   │   └── realtimeService.js             ← WS broadcast
+│   ├── repositories/
+│   │   ├── telemetryRepository.js
+│   │   ├── infrastructureRepository.js
+│   │   ├── signalRepository.js
+│   │   ├── incidentRepository.js
+│   │   └── settingsRepository.js
+│   ├── middleware/
+│   │   ├── auth.js                        ← API-key or JWT guard
+│   │   ├── errorHandler.js
+│   │   ├── validation.js                  ← express-validator wrapper
+│   │   └── rateLimit.js
+│   ├── validators/
+│   │   ├── incidentValidator.js
+│   │   ├── infrastructureValidator.js
+│   │   └── settingsValidator.js
+│   └── utils/
+│       ├── response.js                    ← Uniform JSON envelope helper
+│       ├── timestamps.js
+│       └── metrics.js                     ← Rolling window utilities
+├── telemetry/
+│   ├── collector.py
+│   ├── dns_monitor.py
+│   ├── resolver_monitor.py
+│   ├── metric_aggregator.py
+│   └── requirements.txt
+├── ml/
+│   ├── baseline.py
+│   ├── anomaly_detector.py                ← Isolation Forest
+│   ├── incident_classifier.py             ← XGBoost OPERATIONAL/NETWORK/SECURITY/UNKNOWN
+│   ├── outage_predictor.py
+│   ├── explainability.py                  ← SHAP wrapper
+│   ├── feature_engineering.py
+│   └── requirements.txt
+├── migrations/
+│   └── 001_initial_schema.sql
+└── tests/
+    ├── unit/
+    ├── integration/
+    └── api/</pre>
+
+  <h3>4b. Files to MODIFY (frontend stubs → real implementations)</h3>
+
+  <table>
+    <thead><tr><th>File</th><th>Current State</th><th>Required Change</th></tr></thead>
+    <tbody>
+      <tr><td><code>src/lib/supabase.js</code></td><td>Empty</td><td>Initialise Supabase client from <code>VITE_SUPABASE_URL</code> + <code>VITE_SUPABASE_ANON_KEY</code></td></tr>
+      <tr><td><code>src/services/dnsService.js</code></td><td>Empty</td><td>Implement <code>getOverview()</code>, <code>getInfrastructure()</code>, <code>getResolverMetrics(id)</code> using <code>fetch</code> to backend</td></tr>
+      <tr><td><code>src/services/aiService.js</code></td><td>Empty</td><td>Implement <code>getAssessment(incidentId)</code>, <code>getExplanation(incidentId)</code>, <code>getRecommendation(incidentId)</code></td></tr>
+      <tr><td><code>src/services/alertService.js</code></td><td>Empty</td><td>Implement alert-integration fetch helpers</td></tr>
+      <tr><td><code>src/hooks/useRealtime.js</code></td><td>Empty</td><td>Open WebSocket connection, dispatch events into DNSStateContext</td></tr>
+      <tr><td><code>src/contexts/DNSStateContext.jsx</code></td><td>Mock interval</td><td>Add WebSocket path; keep interval only when <code>DNS_X_SIMULATION=true</code> flag propagated via env</td></tr>
+      <tr><td><code>src/components/incidents/IncidentTable.jsx</code></td><td>Hardcoded array</td><td>Accept <code>incidents</code> prop from parent page; remove inline constant</td></tr>
+      <tr><td><code>src/components/ai/AIAssessment.jsx</code></td><td>Hardcoded metrics</td><td>Accept <code>assessment</code> prop</td></tr>
+      <tr><td><code>src/components/ai/ThreatProbability.jsx</code></td><td>Hardcoded array</td><td>Accept <code>probabilities</code> prop</td></tr>
+      <tr><td><code>src/pages/Incidents.jsx</code></td><td>No data fetch</td><td>Fetch from <code>dnsService</code>, pass to child components</td></tr>
+      <tr><td><code>src/pages/AIInsights.jsx</code></td><td>No data fetch</td><td>Fetch from <code>aiService</code>, pass to child components</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4c. Files to CREATE at root (project config)</h3>
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>.env.example</code></td><td>Document all required env vars for both Vite frontend and Node backend</td></tr>
+      <tr><td><code>backend/.env.example</code></td><td>Backend-specific env template</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4d. Files NOT to touch</h3>
+  <p>These are complete, correct, and must not be modified during backend work:</p>
+  <code>src/App.jsx</code> · <code>src/main.jsx</code> · <code>src/index.css</code> · <code>vite.config.js</code> · <code>package.json</code> · all <code>src/components/</code> (except the three listed above) · <code>src/data/liveState.js</code> (kept as simulation module) · <code>src/data/mockInfrastructure.js</code> (kept as simulation module)
+
+
+  
+  <h2>5 — Database Schema Outline (Supabase PostgreSQL)</h2>
+
+  <table>
+    <thead><tr><th>Table</th><th>Key Columns</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>resolvers</code></td><td>id, name, ip, port, status, created_at</td><td>Known resolver inventory</td></tr>
+      <tr><td><code>resolver_metrics</code></td><td>resolver_id, window (1m/5m/1h), ts, qps, latency_p50/p95, cache_hit, error_rate</td><td>Aggregated time-window metrics — NOT raw packets</td></tr>
+      <tr><td><code>upstream_metrics</code></td><td>ts, total_qps, nxdomain_rate, servfail_rate, timeout_rate</td><td>Gateway-level aggregate</td></tr>
+      <tr><td><code>signals</code></td><td>id, resolver_id, type (HIGH_LATENCY/QPS_SPIKE/…), observed, baseline, deviation_score, confidence, ts</td><td>Discrete detected deviations</td></tr>
+      <tr><td><code>incidents</code></td><td>id, title, status, severity, affected_resolvers[], root_cause_class, risk_level, started_at, resolved_at</td><td>Correlated incident records</td></tr>
+      <tr><td><code>incident_signals</code></td><td>incident_id, signal_id</td><td>M:N join — which signals compose each incident</td></tr>
+      <tr><td><code>ai_assessments</code></td><td>incident_id, operational_prob, network_prob, security_prob, unknown_prob, confidence, model_version, ts</td><td>ML classification output</td></tr>
+      <tr><td><code>ai_explanations</code></td><td>incident_id, features (JSONB SHAP values), narrative</td><td>Explainability record</td></tr>
+      <tr><td><code>ai_recommendations</code></td><td>incident_id, actions (JSONB)</td><td>Actionable response guidance</td></tr>
+      <tr><td><code>alert_integrations</code></td><td>id, type (webhook/email/pagerduty), config (JSONB), enabled</td><td>Outbound alert channel config</td></tr>
+      <tr><td><code>alert_events</code></td><td>id, integration_id, incident_id, status, payload, ts</td><td>Alert delivery audit log</td></tr>
+      <tr><td><code>system_settings</code></td><td>key, value (JSONB), updated_at</td><td>Runtime configuration store</td></tr>
+    </tbody>
+  </table>
+
+
+  
+  <h2>6 — REST API ↔ Frontend Binding</h2>
+
+  <table>
+    <thead><tr><th>Endpoint</th><th>Method</th><th>Frontend Consumer</th><th>WS Event Counterpart</th></tr></thead>
+    <tbody>
+      <tr><td><code>/api/v1/health</code></td><td>GET</td><td>Readiness probe</td><td>—</td></tr>
+      <tr><td><code>/api/v1/overview</code></td><td>GET</td><td><code>Dashboard.jsx</code> initial load</td><td><code>telemetry.updated</code></td></tr>
+      <tr><td><code>/api/v1/infrastructure</code></td><td>GET</td><td><code>Monitoring.jsx</code></td><td><code>resolver.updated</code></td></tr>
+      <tr><td><code>/api/v1/infrastructure/resolvers/:id/metrics</code></td><td>GET</td><td>ResolverCard detail</td><td>—</td></tr>
+      <tr><td><code>/api/v1/signals</code></td><td>GET</td><td><code>Anomalies.jsx</code></td><td><code>signal.detected</code></td></tr>
+      <tr><td><code>/api/v1/incidents</code></td><td>GET</td><td><code>IncidentTable.jsx</code></td><td><code>incident.created</code></td></tr>
+      <tr><td><code>/api/v1/incidents/:id</code></td><td>GET</td><td>Incident detail</td><td><code>incident.updated</code></td></tr>
+      <tr><td><code>/api/v1/incidents/:id/acknowledge</code></td><td>POST</td><td>IncidentTable action</td><td><code>incident.updated</code></td></tr>
+      <tr><td><code>/api/v1/incidents/:id/resolve</code></td><td>POST</td><td>IncidentTable action</td><td><code>incident.updated</code></td></tr>
+      <tr><td><code>/api/v1/incidents/:id/ai</code></td><td>GET</td><td><code>AIInsights.jsx</code></td><td><code>ai.assessment.updated</code></td></tr>
+      <tr><td><code>/api/v1/incidents/:id/explanation</code></td><td>GET</td><td><code>ExplainabilityPanel.jsx</code></td><td>—</td></tr>
+      <tr><td><code>/api/v1/incidents/:id/recommendation</code></td><td>GET</td><td><code>AIRecommendation.jsx</code></td><td>—</td></tr>
+      <tr><td><code>/api/v1/settings</code></td><td>GET / PATCH</td><td><code>Settings.jsx</code></td><td>—</td></tr>
+    </tbody>
+  </table>
+
+
+  
+  <h2>7 — Implementation Sequencing</h2>
+
+  <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Node.js/Express foundation + Supabase</strong> backend/package.json, server.js, app.js, config/, middleware/, migrations/001_initial_schema.sql, .env.example</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Telemetry collection + metric aggregation</strong> Python collector.py, dns_monitor.py, metric_aggregator.py, telemetryService.js, simulation mode flag</div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Baseline learning + signal detection</strong> baselineService.js (rolling Z-score per resolver), signalService.js (HIGH_LATENCY, QPS_SPIKE, ERROR_SPIKE, etc.)</div></div>
+  <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Correlation engine + incident lifecycle</strong> correlationService.js, incidentService.js, incident routes + controllers</div></div>
+  <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Python ML layer</strong> Isolation Forest anomaly detector, XGBoost classifier, SHAP explainability, outage risk predictor; aiService.js bridge</div></div>
+  <div class="step"><div class="step-num">7</div><div class="step-body"><strong>Real-time layer</strong> realtimeService.js (ws or SSE), all broadcast events, useRealtime.js hook in frontend</div></div>
+  <div class="step"><div class="step-num">8</div><div class="step-body"><strong>Frontend wiring</strong> Fill dnsService.js, aiService.js; remove hardcoded arrays from IncidentTable, AIAssessment, ThreatProbability; connect DNSStateContext to WebSocket</div></div>
+  <div class="step"><div class="step-num">9</div><div class="step-body"><strong>Tests + security hardening</strong> Unit tests for signal/baseline/correlation logic, API integration tests, rate-limit + auth middleware</div></div>
+
+
+  
+  <h2>8 — Key Decisions &amp; Constraints</h2>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>Simulation Mode</h4>
+      <ul>
+        <li><code>DNS_X_SIMULATION=true</code> in backend .env</li>
+        <li>Python telemetry is replaced by a scenario generator</li>
+        <li>Frontend mock interval retained as sim fallback</li>
+        <li>Identical pipeline code path as production</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>ML Layer Boundary</h4>
+      <ul>
+        <li>Node → Python via <code>child_process.spawn</code> or HTTP sub-process</li>
+        <li>Isolation Forest + XGBoost — no LLMs in real-time path</li>
+        <li>SHAP values returned as JSON feature-impact list</li>
+        <li>Fallback to rule-based classification if training data is sparse</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Data Retention</h4>
+      <ul>
+        <li>Raw DNS packets are NOT stored</li>
+        <li>Metrics aggregated into 1m, 5m, 1h windows</li>
+        <li>Signals retained indefinitely (small records)</li>
+        <li>Resolver metrics auto-pruned at configurable TTL</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>Frontend Compatibility</h4>
+      <ul>
+        <li>Backend JSON shape must match liveState.js contract exactly</li>
+        <li>No frontend route changes required</li>
+        <li>All 6 existing pages remain; data source swapped incrementally</li>
+        <li>Tailwind / Vite / React versions untouched</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Next action:</strong> Proceed to Step 2 — scaffold the backend Node.js/Express foundation, create the Supabase migration, and set up the .env structure.
+  </div>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

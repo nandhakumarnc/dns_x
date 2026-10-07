@@ -1,0 +1,1 @@
+export { useDNSState as default } from '../contexts/DNSStateContext'
